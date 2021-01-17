@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:math_expressions/math_expressions.dart';
 
 class Calculator extends StatefulWidget {
   Calculator({Key key}) : super(key: key);
@@ -12,7 +13,36 @@ class _CalculatorState extends State<Calculator> {
   String result = "0";
   String expression = "";
   buttonPressed(String buttonText) {
-    //YOU WILL HAVE TO IMPLEMENT THIS METHOD
+    setState(() {
+      if (buttonText == "AC") {
+        equation = "0";
+        result = "0";
+      } else if (buttonText == "C") {
+        equation = equation.substring(0, equation.length - 1);
+        if (equation == "") {
+          equation = "0";
+        }
+      } else if (buttonText == "=") {
+        expression = equation;
+        expression = expression.replaceAll('x', '*');
+        expression = expression.replaceAll('÷', '/');
+        //using imports ,Converting expression into equation.Also checking for errors
+        try {
+          Parser p = Parser();
+          Expression exp = p.parse(expression);
+          ContextModel cm = ContextModel();
+          result = '${exp.evaluate(EvaluationType.REAL, cm)}';
+        } catch (e) {
+          result = 'ERROR';
+        }
+      } else {
+        if (equation == "0") {
+          equation = buttonText;
+        } else {
+          equation = equation + buttonText;
+        }
+      }
+    });
   }
 
   Widget buildButton(String buttonText, double buttonHeight, Color buttonColor,
@@ -22,11 +52,13 @@ class _CalculatorState extends State<Calculator> {
       color: buttonColor,
       child: FlatButton(
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(0.0),
+              borderRadius: BorderRadius.circular(5.0),
               side: BorderSide(
                   color: Colors.white, width: 1, style: BorderStyle.solid)),
           padding: EdgeInsets.all(16.0),
-          onPressed: () => buttonPressed(buttonText),
+          onPressed: () {
+            buttonPressed(buttonText);
+          },
           child: Text(
             buttonText,
             style: TextStyle(
